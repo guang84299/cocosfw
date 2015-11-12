@@ -4,7 +4,6 @@
  */
 
 //加载js
-var d = document;
 var c = {
     project_type : "javascript",
     debugMode    : 1,
@@ -16,30 +15,46 @@ var c = {
     modules      : ["cocos2d", "extensions", "chipmunk", "spine"],
     jsList       : []
 };
-
-var s = d.createElement("script");
+var s = document.createElement("script");
 s.src = c.engineDir + "CCBoot.js";
-
-d.ccConfig = c;
+document.ccConfig = c;
 s.id = "cocos2d-html5";
-s.addEventListener("load", function() {
-    s.removeEventListener("load", arguments.callee, false);
 
-    cc.game.onStart = function() {
+var loadCocos = function()
+{
 
-        cc.view.enableRetina(false);
-        cc.view.adjustViewPort(true);
-        //cc.view.setDesignResolutionSize(960, 640, cc.ResolutionPolicy.SHOW_ALL);
-        //cc.view.resizeWithBrowserSize(true);
+    s.addEventListener("load", function() {
+        s.removeEventListener("load", arguments.callee, false);
 
-        var parser = new GParser();
-        parser.addfile("includeFile.js");
-        parser.find();
+        cc.game.onStart = function() {
 
-    }.bind(s);
-    cc.game.run();
+            cc.view.enableRetina(false);
+            cc.view.adjustViewPort(true);
+            //cc.view.setDesignResolutionSize(960, 640, cc.ResolutionPolicy.SHOW_ALL);
+            //cc.view.resizeWithBrowserSize(true);
 
-}.bind(s), false);
-d.body.appendChild(s);
+            var parser = new GParser();
+            parser.addfile("includeFile.js");
+            parser.find();
+
+        }.bind(s);
+        cc.game.run();
+
+    }.bind(s), false);
+    document.body.appendChild(s);
+};
+
+var parser = document.createElement("script");
+parser.src = "frameworks/webext/includeParser.js";
+parser.addEventListener("load", function() {
+    parser.removeEventListener("load", arguments.callee, false);
+
+    loadCocos();
+
+}.bind(parser), false);
+document.body.appendChild(parser);
+
+
+
 
 
