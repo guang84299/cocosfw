@@ -15,8 +15,6 @@ if (cc.sys.isNative)
         searchPaths.push('src');
         jsb.fileUtils.setSearchPaths(searchPaths);
 
-        require("includeFile.js");
-
         cc.director.runScene( new GScene());
     };
     cc.game.run();
