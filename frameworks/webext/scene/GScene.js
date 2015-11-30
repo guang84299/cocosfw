@@ -5,21 +5,23 @@
  */
 
 var GScene = cc.Scene.extend({
+    _layerStats : null,
     ctor : function()
     {
         this._super();
-
         this.init();
     },
     init : function()
     {
         this._super();
 
-        var colorLayer = new cc.LayerColor(cc.color(255,0,0),300,300);
-        this.addChild(colorLayer);
+        this._layerStats = new GLayerStats();
+        this._layerStats.setAnchorPoint(cc.p(0,0));
 
+        this.addChild(this._layerStats);
         return true;
     }
+
 
 });
 

@@ -7,7 +7,7 @@
 var c = {
     project_type : "javascript",
     debugMode    : 1,
-    showFPS      : true,
+    showFPS      : false,
     frameRate    : 60,
     id           : "gameCanvas",  // the dom element to run cocos2d on
     renderMode   : 2,                 // choose of RenderMode: 0(default), 1(Canvas only), 2(WebGL only)
