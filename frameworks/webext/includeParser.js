@@ -46,7 +46,7 @@ GParser.prototype.find = function()
     this.http(file,function(http){
 
         var text = http.responseText;
-        var fs = text.match(/include\("([^"]+)"/g);
+        var fs = text.match(/[^//]include\("([^"]+)"/g);
         if(fs)
         {
             for(var i=0;i<fs.length;i++)

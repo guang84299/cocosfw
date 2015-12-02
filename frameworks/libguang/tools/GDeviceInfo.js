@@ -85,7 +85,7 @@ var GDeviceInfo = cc.Class.extend({
     },
 
     cpu_usage: function() {
-        return 0;
+        return 0.01;
     },
 
     /**

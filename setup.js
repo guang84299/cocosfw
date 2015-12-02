@@ -30,10 +30,11 @@ var loadCocos = function()
 
             cc.view.enableRetina(false);
             cc.view.adjustViewPort(true);
-            //cc.view.setDesignResolutionSize(960, 640, cc.ResolutionPolicy.SHOW_ALL);
-            //cc.view.resizeWithBrowserSize(true);
+            cc.view.setDesignResolutionSize(1136, 640, cc.ResolutionPolicy.FIXED_HEIGHT);
+            cc.view.resizeWithBrowserSize(true);
 
             var parser = new GParser();
+            parser.addfile("frameworks/libguang/guang.js");
             parser.addfile("includeFile.js");
             parser.find();
 

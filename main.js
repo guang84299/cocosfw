@@ -7,7 +7,7 @@ if (cc.sys.isNative)
     cc.game.onStart = function()
     {
         var resolutionPolicy = (cc.sys.os == cc.sys.OS_WP8 || cc.sys.os == cc.sys.OS_WINRT) ? cc.ResolutionPolicy.SHOW_ALL : cc.ResolutionPolicy.FIXED_HEIGHT;
-        cc.view.setDesignResolutionSize(800, 450, resolutionPolicy);
+        cc.view.setDesignResolutionSize(1136, 640, resolutionPolicy);
         cc.view.resizeWithBrowserSize(true);
 
         var searchPaths = jsb.fileUtils.getSearchPaths();
