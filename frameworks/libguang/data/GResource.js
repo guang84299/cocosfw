@@ -9,6 +9,10 @@ var GResource = cc.Class.extend({
     {
 
     },
+    loadfile : function(url)
+    {
+
+    },
     //可写路径
     getWritePath : function()
     {

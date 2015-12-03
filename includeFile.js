@@ -13,6 +13,9 @@ include("frameworks/webext/layer/GLayerStats.js");
 include("frameworks/webext/tools/GTime.js");
 include("frameworks/webext/tools/sprintf.js");
 
+//ui
+include("frameworks/webext/ui/GSprite.js");
+
 include("frameworks/webext/test/GTest.js");
 
 //最后加载

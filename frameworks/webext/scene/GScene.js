@@ -19,6 +19,11 @@ var GScene = cc.Scene.extend({
         this._layerStats.setAnchorPoint(cc.p(0,0));
 
         this.addChild(this._layerStats);
+
+        var sp = new GSprite();
+        sp.setImage("http://localhost:63342/cocosfw/res/hw.png");
+        sp.setPosition(cc.p(200,200));
+        this.addChild(sp);
         return true;
     }
 
