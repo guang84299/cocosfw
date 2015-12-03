@@ -4,7 +4,59 @@
 
 var GHtttpService = cc.Class.extend({
 
+    //http 请求
+    request : function(task)
+    {
+        var handle = this.getHandle(task);
+        task.timer = GTime.nowTime();
+        handle.send(null);
+        GLog("load file:"+task.getUrl());
+    },
+    //单个文件下载
+    download : function(task)
+    {
+        task.setAsync(false);
+        this.request(task);
+    },
+    //异步下载
+    asyncDownload : function(task)
+    {
+        task.setAsync(true);
+        this.request(task);
+    },
 
+    getHandle : function(task)
+    {
+        var xmlhttp = null;
+        if (window.XMLHttpRequest)
+        {   // code for IE7+, Firefox, Chrome, Opera, Safari
+            xmlhttp = new XMLHttpRequest();
+            //针对某些特定版本的mozillar浏览器的bug进行修正。
+            if (xmlhttp.overrideMimeType) {
+                xmlhttp.overrideMimeType('text/xml');
+            }
+        }
+        else
+        {// code for IE6, IE5
+            xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+        }
+        xmlhttp.onreadystatechange = task.callback.bind(task,xmlhttp);
+        if(task.getAsync())
+        {
+            xmlhttp.onprogress = task.progress_callback.bind(task);
+            if(task.getType() == GHTTPTYPE.DOWNLOAD)
+            {
+                xmlhttp.responseType = "arraybuffer";
+            }
+        }
+        xmlhttp.open("GET",task.getUrl(),task.getAsync());
+
+        //使用post方式发送数据
+        //xmlhttp.open("POST","xhr.php",true);
+        //post需要自己设置http的请求头
+        //xmlhttp.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
+        return xmlhttp;
+    }
 });
 
 GHtttpService.getInstance = function()
@@ -29,6 +81,7 @@ var GHttpTask = cc.Class.extend({
         this.async = false;
         this.data = null;
         this.file = null;
+        this.timer = 0;
     },
     setUrl : function(url)
     {
@@ -42,6 +95,10 @@ var GHttpTask = cc.Class.extend({
     setType : function(type)
     {
         this.type = type;
+        if(type == GHTTPTYPE.REQUEST)
+            this.async = false;
+        else
+            this.async = true;
     },
     getType : function()
     {
@@ -102,9 +159,10 @@ var GHttpTask = cc.Class.extend({
         return this.path;
     },
     //文件
-    writeFileData : function(data,size)
+    writeFileData : function(data)
     {
-
+        this.write_data(data);
+        this.file = data;
     },
     getFile : function()
     {
@@ -130,6 +188,11 @@ var GHttpTask = cc.Class.extend({
     //是否异步
     setAsync : function(async)
     {
+        if(this.type == GHTTPTYPE.REQUEST)
+        {
+            this.async = false;
+            return;
+        }
         this.async = async;
     },
     getAsync : function()
@@ -142,16 +205,65 @@ var GHttpTask = cc.Class.extend({
         this.callback = callback;
     },
 
-    write_data : function(buffer, size, nmemb)
+    write_data : function(buffer)
     {
+        this.setData(buffer);
+        this.setDataLen(buffer.length);
+        this.setProgress(1);
 
+        var dt = GTime.nowTime() - this.timer;
+        if(dt > 0)
+        {
+            dt = dt / 1000.0;
+            this.speed = (buffer.length /1024.0 / dt).toFixed(0);
+        }
     },
-    progress_callback : function(dltotal, dlnow)
+    progress_callback : function(event)
     {
+        if (event.lengthComputable)
+        {
+            var total = event.total;
+            var now = event.loaded;
 
+            if(!total || !now)
+            return;
+
+            var progress = (now/total).toFixed(2);
+            this.setProgress(progress);
+        }
     },
-
-    callback : null,
+    callback : function(xmlhttp)
+    {
+        if (xmlhttp.readyState==4 && xmlhttp.status==200)
+        {
+            this.setStatus(true);
+            if(this.getType() == GHTTPTYPE.REQUEST)
+            {
+                //纯文本的数据
+                this.write_data(xmlhttp.responseText);
+            }
+            else
+            {
+                if (xmlhttp.response)
+                {
+                    if (xmlhttp.response instanceof ArrayBuffer)
+                    {
+                        // 异步过来的都是ArrayBuffer
+                        this.writeFileData(xmlhttp.response);
+                    }
+                    else
+                    {
+                        // 同步过来的都是二进制字符串
+                        this.writeFileData(xmlhttp.response);
+                    }
+                }
+            }
+        }
+        else
+        {
+            this.setStatus(false);
+        }
+    },
 
     url : "",
     type : 0,
@@ -163,10 +275,13 @@ var GHttpTask = cc.Class.extend({
     path : "",
     status : false,
     file : null,
-    async : false
+    async : false,
+    timer : 0
 });
 
 GHttpTask.create = function()
 {
     return new GHttpTask();
 };
+
+

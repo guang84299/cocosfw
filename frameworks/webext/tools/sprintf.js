@@ -75,10 +75,10 @@ sprintf.format = function(parse_tree, argv) {
 };
 
 sprintf.error = function(desc) {
-    if (pi.DEBUG)
+    if (GDeviceInfo.getInstance().mode_debug())
         throw new Error(desc);
     else
-        PILogE("%s", desc);
+        GLogE("%s", desc);
 };
 
 sprintf.cache = {};

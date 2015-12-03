@@ -8,4 +8,9 @@
 include("tools/GDeviceInfo.js");
 include("tools/GLogger.js");
 
+//data
+include("data/GResource.js");
+
+//net
+include("net/GHtttpService.js");
 

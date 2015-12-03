@@ -10,7 +10,10 @@ include("frameworks/webext/scene/GScene.js");
 include("frameworks/webext/layer/GLayerStats.js");
 
 //tools
+include("frameworks/webext/tools/GTime.js");
 include("frameworks/webext/tools/sprintf.js");
+
+include("frameworks/webext/test/GTest.js");
 
 //最后加载
 include("main.js");

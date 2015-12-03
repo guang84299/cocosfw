@@ -73,6 +73,8 @@ GParser.prototype.loadjs = function()
         }.bind(this), false);
         document.body.appendChild(obj);
         this.index++;
+
+        console.log("load js:"+obj.src);
     }
     else
     {
