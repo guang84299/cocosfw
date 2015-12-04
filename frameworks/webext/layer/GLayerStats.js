@@ -50,7 +50,6 @@ var GLayerStats = cc.Layer.extend({
         this._text3.setString(fps);
         this._text2.setString(cpu);
         this._text.setString(net);
-
         this._frames = 0;
     }
 

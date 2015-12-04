@@ -13,3 +13,4 @@ var GHttpTest = function()
     GHtttpService.getInstance().download(task);
 };
 //GHttpTest();
+

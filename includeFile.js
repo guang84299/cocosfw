@@ -12,6 +12,7 @@ include("frameworks/webext/layer/GLayerStats.js");
 //tools
 include("frameworks/webext/tools/GTime.js");
 include("frameworks/webext/tools/sprintf.js");
+include("frameworks/webext/tools/utf8.js");
 
 //ui
 include("frameworks/webext/ui/GSprite.js");

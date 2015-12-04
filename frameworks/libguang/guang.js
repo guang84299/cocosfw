@@ -9,6 +9,8 @@ include("tools/GDeviceInfo.js");
 include("tools/GLogger.js");
 
 //data
+include("data/GAssetLoader.js");
+include("data/GFileType.js");
 include("data/GResource.js");
 
 //net

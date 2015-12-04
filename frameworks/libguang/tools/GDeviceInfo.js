@@ -4,7 +4,7 @@
 
 var GDeviceInfo = cc.Class.extend({
     ctor: function() {
-
+        this.usa = 0;
     },
 
     /**
@@ -85,7 +85,12 @@ var GDeviceInfo = cc.Class.extend({
     },
 
     cpu_usage: function() {
-        return 0.01;
+        var t = GTime.nowTime();
+        var cpuTimer = setInterval(function(){
+            this.usa = 1.0 - 500.0 / (GTime.nowTime() - t);
+            clearInterval(cpuTimer);
+        }.bind(this),500);
+        return this.usa;
     },
 
     /**

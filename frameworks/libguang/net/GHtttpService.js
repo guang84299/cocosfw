@@ -15,13 +15,14 @@ var GHtttpService = cc.Class.extend({
     //单个文件下载
     download : function(task)
     {
+        task.setType(GHTTPTYPE.DOWNLOAD);
         task.setAsync(false);
         this.request(task);
     },
     //异步下载
     asyncDownload : function(task)
     {
-        task.setAsync(true);
+        task.setType(GHTTPTYPE.DOWNLOAD);
         this.request(task);
     },
 
@@ -67,6 +68,98 @@ GHtttpService.getInstance = function()
     return this.instanceGHtttpService;
 };
 
+/**
+ * 对ajax返回的二进制文本进行base64编码
+ * 将二进制数据用字符串传输的原理是：字符串两个字节，高位是一个随机非0的，这样保证整个字符串不是\0，从而不会被截断
+ * 但是还原成二进制时要和0xFF做位运算去掉高位的字节
+ */
+GHtttpService.binaryText2Base64 = function(binary_text) {
+    var b64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+    var outputStr = "";
+    var i = 0;
+
+    while (i < binary_text.length)
+    {
+        // all three "& 0xff" added below are there to fix a known bug
+        // with bytes returned by xhr.responseText
+        var byte1 = binary_text.charCodeAt(i++) & 0xff;
+        var byte2 = binary_text.charCodeAt(i++) & 0xff;
+        var byte3 = binary_text.charCodeAt(i++) & 0xff;
+
+        var enc1 = byte1 >> 2;
+        var enc2 = ((byte1 & 3) << 4) | (byte2 >> 4);
+
+        var enc3, enc4;
+        if (isNaN(byte2))
+        {
+            enc3 = enc4 = 64;
+        }
+        else
+        {
+            enc3 = ((byte2 & 15) << 2) | (byte3 >> 6);
+            if (isNaN(byte3))
+            {
+                enc4 = 64;
+            }
+            else
+            {
+                enc4 = byte3 & 63;
+            }
+        }
+
+        outputStr +=  b64.charAt(enc1) + b64.charAt(enc2) + b64.charAt(enc3) + b64.charAt(enc4);
+    }
+
+    return outputStr;
+};
+
+
+/**
+ * 对字节数组或字符串进行base64编码
+ * @param {String|Array|ArrayBuffer} mixed
+ */
+GHtttpService.byteArray2Base64 = function(mixed) {
+    var byte_array = (mixed instanceof ArrayBuffer) ? new Uint8Array(mixed) : mixed;
+    var count      = (mixed instanceof ArrayBuffer) ? mixed.byteLength : mixed.length;
+    var b64        = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+    var outputStr  = "";
+    var i = 0;
+
+    while (i < count)
+    {
+        // all three "& 0xff" added below are there to fix a known bug
+        // with bytes returned by xhr.responseText
+        var byte1 = byte_array[i++] & 0xff;
+        var byte2 = byte_array[i++] & 0xff;
+        var byte3 = byte_array[i++] & 0xff;
+
+        var enc1 = byte1 >> 2;
+        var enc2 = ((byte1 & 3) << 4) | (byte2 >> 4);
+
+        var enc3, enc4;
+        if (isNaN(byte2))
+        {
+            enc3 = enc4 = 64;
+        }
+        else
+        {
+            enc3 = ((byte2 & 15) << 2) | (byte3 >> 6);
+            if (isNaN(byte3))
+            {
+                enc4 = 64;
+            }
+            else
+            {
+                enc4 = byte3 & 63;
+            }
+        }
+
+        outputStr +=  b64.charAt(enc1) + b64.charAt(enc2) + b64.charAt(enc3) + b64.charAt(enc4);
+    }
+
+    return outputStr;
+};
+
 var GHTTPTYPE = {REQUEST:0,DOWNLOAD:1};
 
 var GHttpTask = cc.Class.extend({
@@ -86,6 +179,7 @@ var GHttpTask = cc.Class.extend({
     setUrl : function(url)
     {
         this.url = url;
+        this.setPath(url);
     },
     getUrl : function()
     {
@@ -152,7 +246,15 @@ var GHttpTask = cc.Class.extend({
     //下载文件保存路径
     setPath : function(path)
     {
-        this.path = path;
+        var m = this.url.match(/res\/.+$/);
+        if(m && m[0])
+        {
+            this.path = m[0];
+        }
+        else
+        {
+            GLogE("can't match res:%s",path);
+        }
     },
     getPath : function()
     {
@@ -208,14 +310,17 @@ var GHttpTask = cc.Class.extend({
     write_data : function(buffer)
     {
         this.setData(buffer);
+        var len = (buffer instanceof ArrayBuffer) ? buffer.byteLength : buffer.length;
         this.setDataLen(buffer.length);
         this.setProgress(1);
+
+        GResource.getInstance().write_local(this.path,buffer);
 
         var dt = GTime.nowTime() - this.timer;
         if(dt > 0)
         {
             dt = dt / 1000.0;
-            this.speed = (buffer.length /1024.0 / dt).toFixed(0);
+            this.speed = (len /1024.0 / dt).toFixed(0);
         }
     },
     progress_callback : function(event)
@@ -249,12 +354,12 @@ var GHttpTask = cc.Class.extend({
                     if (xmlhttp.response instanceof ArrayBuffer)
                     {
                         // 异步过来的都是ArrayBuffer
-                        this.writeFileData(xmlhttp.response);
+                        this.writeFileData(GHtttpService.byteArray2Base64(xmlhttp.response));
                     }
                     else
                     {
                         // 同步过来的都是二进制字符串
-                        this.writeFileData(xmlhttp.response);
+                        this.writeFileData(GHtttpService.binaryText2Base64(xmlhttp.response));
                     }
                 }
             }
