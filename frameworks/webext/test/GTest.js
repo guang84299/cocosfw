@@ -10,7 +10,7 @@ var GHttpTest = function()
     task.setUrl("http://localhost:63342/cocosfw/res/HelloWorld.png");
     task.setType(GHTTPTYPE.REQUEST);
 
-    GHtttpService.getInstance().download(task);
+    GHttpService.getInstance().download(task);
 };
 //GHttpTest();
 

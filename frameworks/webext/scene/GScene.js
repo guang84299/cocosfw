@@ -18,11 +18,11 @@ var GScene = cc.Scene.extend({
         this._layerStats = new GLayerStats();
         this._layerStats.setAnchorPoint(cc.p(0,0));
 
-        this.addChild(this._layerStats);
+        this.addChild(this._layerStats,100);
 
         var sp = new GSprite();
-        sp.setImage("res/hw.png");
-        sp.setPosition(cc.p(200,200));
+        sp.setImage("res/l.png");
+        sp.setPosition(cc.p(cc.winSize.width,cc.winSize.height));
         this.addChild(sp);
         return true;
     }

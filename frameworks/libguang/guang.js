@@ -14,5 +14,5 @@ include("data/GFileType.js");
 include("data/GResource.js");
 
 //net
-include("net/GHtttpService.js");
+include("net/GHttpService.js");
 

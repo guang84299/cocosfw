@@ -2,7 +2,7 @@
  * Created by yanchunguang on 15/12/2.
  */
 
-var GHtttpService = cc.Class.extend({
+var GHttpService = cc.Class.extend({
 
     //http 请求
     request : function(task)
@@ -32,16 +32,15 @@ var GHtttpService = cc.Class.extend({
         if (window.XMLHttpRequest)
         {   // code for IE7+, Firefox, Chrome, Opera, Safari
             xmlhttp = new XMLHttpRequest();
-            //针对某些特定版本的mozillar浏览器的bug进行修正。
-            if (xmlhttp.overrideMimeType) {
-                xmlhttp.overrideMimeType('text/xml');
-            }
         }
         else
         {// code for IE6, IE5
             xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
         }
         xmlhttp.onreadystatechange = task.callback.bind(task,xmlhttp);
+
+        xmlhttp.open("GET",task.getUrl(),task.getAsync());
+
         if(task.getAsync())
         {
             xmlhttp.onprogress = task.progress_callback.bind(task);
@@ -50,7 +49,10 @@ var GHtttpService = cc.Class.extend({
                 xmlhttp.responseType = "arraybuffer";
             }
         }
-        xmlhttp.open("GET",task.getUrl(),task.getAsync());
+        else
+        {
+            xmlhttp.overrideMimeType("text\/plain; charset=x-user-defined");
+        }
 
         //使用post方式发送数据
         //xmlhttp.open("POST","xhr.php",true);
@@ -60,12 +62,12 @@ var GHtttpService = cc.Class.extend({
     }
 });
 
-GHtttpService.getInstance = function()
+GHttpService.getInstance = function()
 {
-    if(!this.instanceGHtttpService)
-        this.instanceGHtttpService = new GHtttpService();
+    if(!this.instanceGHttpService)
+        this.instanceGHttpService = new GHttpService();
 
-    return this.instanceGHtttpService;
+    return this.instanceGHttpService;
 };
 
 /**
@@ -73,7 +75,7 @@ GHtttpService.getInstance = function()
  * 将二进制数据用字符串传输的原理是：字符串两个字节，高位是一个随机非0的，这样保证整个字符串不是\0，从而不会被截断
  * 但是还原成二进制时要和0xFF做位运算去掉高位的字节
  */
-GHtttpService.binaryText2Base64 = function(binary_text) {
+GHttpService.binaryText2Base64 = function(binary_text) {
     var b64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
     var outputStr = "";
     var i = 0;
@@ -118,7 +120,7 @@ GHtttpService.binaryText2Base64 = function(binary_text) {
  * 对字节数组或字符串进行base64编码
  * @param {String|Array|ArrayBuffer} mixed
  */
-GHtttpService.byteArray2Base64 = function(mixed) {
+GHttpService.byteArray2Base64 = function(mixed) {
     var byte_array = (mixed instanceof ArrayBuffer) ? new Uint8Array(mixed) : mixed;
     var count      = (mixed instanceof ArrayBuffer) ? mixed.byteLength : mixed.length;
     var b64        = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
@@ -156,8 +158,28 @@ GHtttpService.byteArray2Base64 = function(mixed) {
 
         outputStr +=  b64.charAt(enc1) + b64.charAt(enc2) + b64.charAt(enc3) + b64.charAt(enc4);
     }
-
     return outputStr;
+};
+
+// 将二进制数据用字符串传输的原理是：字符串两个字节，高位是一个随机非0的，这样保证整个字符串不是\0，从而不会被截断
+// 但是还原成二进制时要和0xFF做位运算去掉高位的字节
+GHttpService.binary2Array = function(binary_str) {
+    var array = [];
+
+    for (var i = 0, len = binary_str.length; i < len; ++i)
+        array.push(binary_str.charCodeAt(i) & 0xFF);
+
+    return array;
+};
+
+GHttpService.arraybuffer2Array = function(arraybuffer) {
+    var buffer = new Uint8Array(arraybuffer);
+    var bytes  = [];
+
+    for (var i = 0, len = buffer.byteLength; i < len; ++i)
+        bytes.push(buffer[i]);
+
+    return bytes;
 };
 
 var GHTTPTYPE = {REQUEST:0,DOWNLOAD:1};
@@ -354,12 +376,12 @@ var GHttpTask = cc.Class.extend({
                     if (xmlhttp.response instanceof ArrayBuffer)
                     {
                         // 异步过来的都是ArrayBuffer
-                        this.writeFileData(GHtttpService.byteArray2Base64(xmlhttp.response));
+                        this.writeFileData(GHttpService.arraybuffer2Array(xmlhttp.response));
                     }
                     else
                     {
                         // 同步过来的都是二进制字符串
-                        this.writeFileData(GHtttpService.binaryText2Base64(xmlhttp.response));
+                        this.writeFileData(GHttpService.binary2Array(xmlhttp.response));
                     }
                 }
             }

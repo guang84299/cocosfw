@@ -24,7 +24,7 @@ var GResource = cc.Class.extend({
         //下载
         var task = GHttpTask.create();
         task.setUrl(url);
-        GHtttpService.getInstance().download(task);
+        GHttpService.getInstance().download(task);
 
         if(this.file_exist(task.getPath()))
         {
@@ -74,7 +74,7 @@ var GResource = cc.Class.extend({
         {
             case GFileType.Image:
                 var png = new Image();
-                png.src = "data:image/png;base64," + byte_array;
+                png.src = "data:image/png;base64," + GHttpService.byteArray2Base64(byte_array);
                 cc.textureCache.cacheImage(path, png);
                 break;
 
